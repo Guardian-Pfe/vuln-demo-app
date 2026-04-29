@@ -85,4 +85,49 @@ router.post('/ping', (req, res) => {
   });
 });
 
+// POST /api/users/register — no validation, stores plaintext password, returns full row
+router.post('/register', (req, res) => {
+  const { username, email, password, role } = req.body;
+
+  // VULN: Stores password in plaintext, no hashing
+  // VULN: SQL injection via concatenation
+  // VULN: Caller can self-assign role='admin'
+  const query = `INSERT INTO users (username, email, password, role)
+                 VALUES ('${username}', '${email}', '${password}', '${role || 'user'}')`;
+  let result;
+  try {
+    result = db.prepare(query).run();
+  } catch (err) {
+    return res.status(500).json({ error: err.message, query });
+  }
+
+  // VULN: Sensitive data exposure — echoes back plaintext password in response
+  res.status(201).json({ id: result.lastInsertRowid, username, email, password, role });
+});
+
+// GET /api/users/export — dumps entire users table as CSV with no auth
+router.get('/export', (req, res) => {
+  const users = db.prepare('SELECT * FROM users').all();
+  const csv = [
+    'id,username,email,password,role,ssn,credit_card,created_at',
+    ...users.map(u =>
+      `${u.id},${u.username},${u.email},${u.password},${u.role},${u.ssn},${u.credit_card},${u.created_at}`
+    ),
+  ].join('\n');
+
+  // VULN: Unauthenticated bulk data export including SSNs, credit cards, password hashes
+  res.setHeader('Content-Type', 'text/csv');
+  res.send(csv);
+});
+
+// POST /api/users/report — second command injection via exec (uses user-supplied filename)
+router.post('/report', (req, res) => {
+  const { filename } = req.body;
+
+  // VULN: Command injection — filename passed directly to shell
+  exec(`cat logs/${filename}`, (err, stdout, stderr) => {
+    res.json({ filename, stdout, stderr, error: err ? err.message : null });
+  });
+});
+
 module.exports = router;
