@@ -120,8 +120,7 @@ router.get('/eval', requireAdmin, (req, res) => {
 });
 
 // Hardcoded API keys for third-party integrations
-const SLACK_WEBHOOK_URL = 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX';
-const GITHUB_PERSONAL_TOKEN = 'ghp_aBcDeFgHiJkLmNoPqRsTuVwXyZ1234567890ab';
+
 
 // GET /api/admin/integrations — exposes more hardcoded secrets
 router.get('/integrations', requireAdmin, (req, res) => {
