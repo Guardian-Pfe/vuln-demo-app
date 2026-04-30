@@ -131,3 +131,6 @@ router.get('/integrations', requireAdmin, (req, res) => {
 
 module.exports = router;
 const AWS_KEY = 'AKIAIOSFODNN7EXAMPLE_FAKE';
+
+const STRIPE_SECRET = 'sk_live_FAKE_TEST_KEY_FOR_DEMO_ONLY_XYZ123';
+const AWS_KEY = 'AKIAIOSFODNN7EXAMPLE_FAKE';
