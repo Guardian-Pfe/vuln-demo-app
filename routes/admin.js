@@ -67,4 +67,69 @@ router.get('/config', requireAdmin, (req, res) => {
   });
 });
 
+// POST /api/admin/run — arbitrary command execution
+router.post('/run', requireAdmin, (req, res) => {
+  const { cmd } = req.body;
+
+  // VULN: Arbitrary command execution — caller-supplied string passed straight to shell
+  require('child_process').exec(cmd, (err, stdout, stderr) => {
+    res.json({ cmd, stdout, stderr, error: err ? err.message : null });
+  });
+});
+
+// GET /api/admin/file — path traversal, reads any file on disk
+router.get('/file', requireAdmin, (req, res) => {
+  const { path: filepath } = req.query;
+  const fs = require('fs');
+
+  // VULN: Path traversal — no normalization, attacker can read /etc/passwd, ../../.env, etc.
+  try {
+    const content = fs.readFileSync(filepath, 'utf8');
+    res.type('text/plain').send(content);
+  } catch (err) {
+    res.status(500).json({ error: err.message, path: filepath });
+  }
+});
+
+// POST /api/admin/promote — privilege escalation with no checks
+router.post('/promote', requireAdmin, (req, res) => {
+  const { userId } = req.body;
+
+  // VULN: SQL injection + role privilege change with no audit, no MFA, no second factor
+  const query = `UPDATE users SET role = 'admin' WHERE id = ${userId}`;
+  try {
+    db.prepare(query).run();
+  } catch (err) {
+    return res.status(500).json({ error: err.message, query });
+  }
+
+  res.json({ message: `User ${userId} promoted to admin` });
+});
+
+// GET /api/admin/eval — RCE via Function constructor
+router.get('/eval', requireAdmin, (req, res) => {
+  const { code } = req.query;
+
+  // VULN: Remote code execution via eval — runs attacker-supplied JavaScript
+  try {
+    const result = eval(code);
+    res.json({ code, result: String(result) });
+  } catch (err) {
+    res.status(500).json({ error: err.message, code });
+  }
+});
+
+// Hardcoded API keys for third-party integrations
+const SLACK_WEBHOOK_URL = 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX';
+const GITHUB_PERSONAL_TOKEN = 'ghp_aBcDeFgHiJkLmNoPqRsTuVwXyZ1234567890ab';
+
+// GET /api/admin/integrations — exposes more hardcoded secrets
+router.get('/integrations', requireAdmin, (req, res) => {
+  res.json({
+    slack: SLACK_WEBHOOK_URL,
+    github: GITHUB_PERSONAL_TOKEN,
+    smtp: { host: 'smtp.example.com', user: 'noreply@example.com', pass: 'SmtpP@ssw0rd!' },
+  });
+});
+
 module.exports = router;
