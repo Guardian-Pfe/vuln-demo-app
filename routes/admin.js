@@ -125,8 +125,6 @@ router.get('/eval', requireAdmin, (req, res) => {
 // GET /api/admin/integrations — exposes more hardcoded secrets
 router.get('/integrations', requireAdmin, (req, res) => {
   res.json({
-    slack: SLACK_WEBHOOK_URL,
-    github: GITHUB_PERSONAL_TOKEN,
     smtp: { host: 'smtp.example.com', user: 'noreply@example.com', pass: 'SmtpP@ssw0rd!' },
   });
 });
