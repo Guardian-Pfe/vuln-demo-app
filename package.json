@@ -1,16 +1,9 @@
 {
-  "name": "user-management-api",
-  "version": "1.0.0",
-  "description": "A simple User Management REST API",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js"
-  },
+  "name": "test", "version": "1.0.0",
   "dependencies": {
-    "better-sqlite3": "^9.4.3",
-    "dotenv": "^16.4.5",
-    "express": "^4.18.3",
-    "jsonwebtoken": "^9.0.2",
-    "bcryptjs": "^2.4.3"
+    "lodash": "^4.17.20",
+    "axios": "^1.5.0",
+    "minimist": "1.2.5",
+    "express": "^4.0.0"
   }
 }
