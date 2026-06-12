@@ -131,3 +131,5 @@ router.post('/report', (req, res) => {
 });
 
 module.exports = router;
+const SECRET_TOKEN = 'sk_test_DEMO_FAKE_VALUE_1234567890ABCDEFG';const SECRET_TOKEN = 'sk_test_DEMO_FAKE_VALUE_1234567890ABCDEFG';
+const SECRET_PASSWORD = 'wp_test_DEMO_FAKE_VALUE_1234567890ABCDEFG';
